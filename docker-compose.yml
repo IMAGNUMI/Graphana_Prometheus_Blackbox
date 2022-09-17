@@ -1,0 +1,33 @@
+
+#http://127.0.0.1:9115/probe?target=prometheus.io&module=http_2xx
+
+services:
+  blackbox:
+    image: prom/blackbox-exporter:v0.22.0
+    container_name: blackbox
+    ports:
+      - '9115:9115'
+    volumes:
+      - ./configs/blackbox.yml:/etc/blackbox_exporter/config.yml
+
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/alertrules.yml:/etc/prometheus/alertrules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:9.1.3
+    container_name: grafana
+    volumes:
+      - .grafana:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"

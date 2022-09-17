@@ -1,0 +1,25 @@
+groups:
+  - name: all
+    rules:
+    - alert: BlackboxScrapingSiteIsDown
+      expr: probe_success == 0
+      for: 10s
+      labels:
+        severity: "critical"
+      annotations:
+        summary: 'Endpoint {{ $labels.instance }} down'
+    - alert: PrometheusTargetDown
+      expr: up == 0
+      for: 10s
+      labels:
+        severity: "critical"
+      annotations:
+        summary: '{{ $value }}% of the {{ $labels.job }} targets are down.'
+    - alert: SlowProbe
+      expr: avg_over_time(probe_duration_seconds[1m]) > 2
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Slow probe (instance {{ $labels.instance }})"
+        description: "Blackbox probe took more than 1s to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
